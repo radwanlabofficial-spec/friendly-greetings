@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Loader2, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cartStore";
 import { formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { toast } from "sonner";
+import { AddToBasketButton } from "./AddToBasketButton";
 
 export function ProductCard({ product }: { product: ShopifyProduct }) {
   const addItem = useCartStore((s) => s.addItem);
@@ -12,8 +11,7 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
   const image = product.node.images.edges[0]?.node;
   const price = product.node.priceRange.minVariantPrice;
 
-  const handleAdd = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleAdd = async () => {
     if (!variant) return;
     await addItem({
       product,
@@ -44,15 +42,15 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           )}
-          <Button
-            onClick={handleAdd}
-            disabled={isLoading || !variant}
-            size="icon"
-            className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-foreground text-background shadow-warm hover:bg-foreground/90 hover:scale-110 transition-transform"
-            aria-label={`Add ${product.node.title} to basket`}
-          >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-5 w-5" />}
-          </Button>
+          <div className="absolute bottom-4 right-4">
+            <AddToBasketButton
+              variant="icon"
+              onAdd={handleAdd}
+              loading={isLoading}
+              disabled={!variant}
+              ariaLabel={`Add ${product.node.title} to basket`}
+            />
+          </div>
         </div>
         <div className="p-5">
           <div className="flex items-baseline justify-between gap-3">
