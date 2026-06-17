@@ -13,9 +13,9 @@ import { VARIETY_DETAILS, DEFAULT_VARIETY } from "@/lib/variety-details";
 import { RelatedProducts } from "@/components/RelatedProducts";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
+import { AddToBasketButton } from "@/components/AddToBasketButton";
 import {
   ArrowLeft,
-  Loader2,
   Leaf,
   Calendar,
   MapPin,
@@ -220,20 +220,15 @@ function ProductPage() {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleAdd}
-                  disabled={isLoading || !variant?.availableForSale}
-                  size="lg"
-                  className="mt-8 w-full sm:w-auto rounded-full bg-foreground text-background hover:bg-foreground/90 px-10"
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : variant?.availableForSale === false ? (
-                    "Sold out"
-                  ) : (
-                    "Add to basket"
-                  )}
-                </Button>
+                <div className="mt-8">
+                  <AddToBasketButton
+                    onAdd={handleAdd}
+                    loading={isLoading}
+                    disabled={!variant}
+                    soldOut={variant?.availableForSale === false}
+                    className="w-full sm:w-auto"
+                  />
+                </div>
 
                 <div className="mt-10 pt-6 border-t border-border/60 grid grid-cols-3 gap-4 text-sm">
                   <SpecMini
