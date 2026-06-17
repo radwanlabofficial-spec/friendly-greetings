@@ -23,13 +23,53 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { MOCK_PRODUCTS } from "@/lib/shopify";
+
+const SITE_URL = "https://sweet-echo-song.lovable.app";
+
 export const Route = createFileRoute("/product/$handle")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.handle} — Aamrash` },
-      { name: "description", content: "Tree-ripened mangoes from Aamrash." },
-    ],
-  }),
+  head: ({ params }) => {
+    const p = MOCK_PRODUCTS.find((m) => m.node.handle === params.handle)?.node;
+    const title = p?.title ?? params.handle.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const description = p
+      ? `${p.description} Tree-ripened, hand-packed and shipped within 24 hours of harvest by Aamrash.`
+      : "Tree-ripened heritage mangoes from Aamrash — hand-picked, hand-packed and shipped within 24 hours of harvest.";
+    const url = `${SITE_URL}/product/${params.handle}`;
+    const image = p?.images.edges[0]?.node.url;
+    const price = p?.variants.edges[0]?.node.price;
+
+    const productJsonLd = p && price && {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: p.title,
+      description: p.description,
+      image: image ? [image] : undefined,
+      brand: { "@type": "Brand", name: "Aamrash" },
+      offers: {
+        "@type": "Offer",
+        url,
+        priceCurrency: price.currencyCode,
+        price: price.amount,
+        availability: "https://schema.org/InStock",
+      },
+    };
+
+    return {
+      meta: [
+        { title: `${title} — Aamrash` },
+        { name: "description", content: description },
+        { property: "og:title", content: `${title} — Aamrash` },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "product" },
+        ...(image ? [{ property: "og:image", content: image }, { name: "twitter:image", content: image }] : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: productJsonLd
+        ? [{ type: "application/ld+json", children: JSON.stringify(productJsonLd) }]
+        : [],
+    };
+  },
   errorComponent: ErrorComp,
   notFoundComponent: NotFoundComp,
   component: ProductPage,
