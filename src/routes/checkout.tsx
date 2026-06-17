@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,6 @@ export const Route = createFileRoute("/checkout")({
 const SHIPPING_FLAT = 120;
 
 function CheckoutPage() {
-  const navigate = useNavigate();
   const { items, updateQuantity, removeItem, clearCart } = useCartStore();
   const [placing, setPlacing] = useState(false);
   const [placed, setPlaced] = useState<string | null>(null);
