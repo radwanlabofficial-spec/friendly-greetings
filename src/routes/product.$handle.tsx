@@ -10,6 +10,7 @@ import {
   type ShopifyProduct,
 } from "@/lib/shopify";
 import { VARIETY_DETAILS, DEFAULT_VARIETY } from "@/lib/variety-details";
+import { RelatedProducts } from "@/components/RelatedProducts";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import {
@@ -337,7 +338,10 @@ function ProductPage() {
                 </dl>
               </div>
             </section>
+
+            <RelatedProducts currentHandle={handle} />
           </>
+
         )}
       </div>
     </div>
