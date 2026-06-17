@@ -26,9 +26,21 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — Aamrash" },
-      { name: "description", content: "Complete your order of tree-ripened mangoes." },
+      { title: "Secure checkout — Aamrash tree-ripened mangoes" },
+      {
+        name: "description",
+        content:
+          "Complete your Aamrash order — secure checkout for tree-ripened Alphonso, Himsagar, Langra and Kesar mangoes shipped within 24 hours of harvest.",
+      },
+      { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Secure checkout — Aamrash" },
+      {
+        property: "og:description",
+        content: "Finish your order of tree-ripened heritage mangoes, dispatched within 24 hours.",
+      },
+      { property: "og:url", content: "https://sweet-echo-song.lovable.app/checkout" },
     ],
+    links: [{ rel: "canonical", href: "https://sweet-echo-song.lovable.app/checkout" }],
   }),
   component: CheckoutPage,
 });

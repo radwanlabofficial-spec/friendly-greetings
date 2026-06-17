@@ -14,16 +14,42 @@ import { ArrowRight, Leaf, Truck, Sun } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Aamrash — Tree-ripened mangoes, delivered" },
+      { title: "Aamrash — Tree-ripened Alphonso, Himsagar, Langra & Kesar mangoes" },
       {
         name: "description",
         content:
-          "Hand-picked Alphonso, Himsagar, Langra and Kesar mangoes. Tree-ripened, shipped within 24 hours of harvest.",
+          "Hand-picked Alphonso, Himsagar, Langra and Kesar mangoes from heritage Indian orchards — tree-ripened and shipped within 24 hours of harvest.",
       },
-      { property: "og:title", content: "Aamrash — Tree-ripened mangoes, delivered" },
+      { property: "og:title", content: "Aamrash — Tree-ripened mangoes from heritage orchards" },
       {
         property: "og:description",
-        content: "Hand-picked Alphonso, Himsagar, Langra and Kesar mangoes.",
+        content:
+          "Hand-picked Alphonso, Himsagar, Langra and Kesar mangoes — tree-ripened and shipped within 24 hours of harvest.",
+      },
+      { property: "og:url", content: "https://sweet-echo-song.lovable.app/" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://sweet-echo-song.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Aamrash",
+          url: "https://sweet-echo-song.lovable.app/",
+          description:
+            "Tree-ripened heritage mangoes from family orchards across Bengal and Maharashtra.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Aamrash",
+          url: "https://sweet-echo-song.lovable.app/",
+        }),
       },
     ],
   }),
@@ -53,11 +79,11 @@ function Index() {
               <Leaf className="w-3 h-3 text-leaf" /> Season 2026 · Live
             </span>
             <h1 className="mt-6 font-display text-5xl sm:text-6xl lg:text-7xl leading-[0.95]">
-              The summer
+              Tree-ripened mangoes
               <br />
-              <span className="italic text-primary">tastes like</span>
+              <span className="italic text-primary">delivered from</span>
               <br />
-              sunshine.
+              heritage orchards.
             </h1>
             <p className="mt-6 max-w-md text-lg text-muted-foreground">
               Tree-ripened mangoes from heritage orchards, hand-packed and

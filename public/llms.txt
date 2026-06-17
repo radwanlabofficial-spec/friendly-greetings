@@ -1,0 +1,16 @@
+# Aamrash
+
+> Tree-ripened heritage mangoes from family orchards across Bengal and Maharashtra, hand-packed and shipped within 24 hours of harvest.
+
+Aamrash sells four single-estate mango varieties — Alphonso, Himsagar, Langra, and Kesar — picked when perfectly ripe, with no cold storage, carbide, or middlemen.
+
+## Pages
+
+- [Home](/): Brand story, the four varieties in season, and the harvest calendar.
+
+## Products
+
+- [Alphonso — Premium Crate](/product/alphonso-mangoes-premium-crate): The king of mangoes from Ratnagiri. Tree-ripened, fiberless, intensely floral.
+- [Himsagar — Bengal's Finest](/product/himsagar-mangoes-bengals-finest): Custard-soft Bengal mango, honey-sweet with pineapple and citrus notes.
+- [Langra — Heritage Harvest](/product/langra-mangoes-heritage-harvest): Green-skinned when ripe, tart-sweet and resinous — a connoisseur's pick.
+- [Kesar — Saffron of Fruits](/product/kesar-mangoes-saffron-of-fruits): Amber Junagadh pulp perfumed with saffron, peach, and brown sugar.
