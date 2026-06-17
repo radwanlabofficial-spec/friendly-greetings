@@ -93,6 +93,7 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
+      <MangoSidebar />
       <Outlet />
       <Toaster position="top-center" richColors />
     </>
