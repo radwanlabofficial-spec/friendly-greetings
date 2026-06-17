@@ -85,6 +85,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Hand-picked, tree-ripened mangoes shipped within 24 hours of harvest." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Aamrash — Tree-ripened mangoes" },
+      { name: "twitter:description", content: "Hand-picked, tree-ripened mangoes shipped within 24 hours of harvest." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/fc46a324-cb47-4bab-9ae9-f02898bef1c5" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/fc46a324-cb47-4bab-9ae9-f02898bef1c5" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
