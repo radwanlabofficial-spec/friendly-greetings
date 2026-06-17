@@ -7,7 +7,7 @@ import {
   type ShopifyProduct,
 } from "@/lib/shopify";
 import { VARIETY_DETAILS, DEFAULT_VARIETY } from "@/lib/variety-details";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Calendar } from "lucide-react";
 
 interface Props {
   currentHandle: string;
@@ -18,6 +18,46 @@ interface Scored {
   score: number;
   sharedNotes: string[];
   sharedPairings: string[];
+}
+
+const MONTH_MAP: Record<string, number> = {
+  january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+  july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+};
+
+function isInSeason(season: string): boolean {
+  const months = season
+    .toLowerCase()
+    .match(
+      /january|february|march|april|may|june|july|august|september|october|november|december/g
+    );
+  if (!months || months.length < 2) return true;
+  const start = MONTH_MAP[months[0]];
+  const end = MONTH_MAP[months[months.length - 1]];
+  if (start == null || end == null) return true;
+  const now = new Date().getMonth();
+  if (start <= end) return now >= start && now <= end;
+  return now >= start || now <= end;
+}
+
+function AvailabilityBadge({ season }: { season: string }) {
+  const inSeason = isInSeason(season);
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide ${
+        inSeason
+          ? "bg-leaf/15 text-leaf"
+          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          inSeason ? "bg-leaf" : "bg-amber-500"
+        }`}
+      />
+      {inSeason ? "In season now" : "Seasonal"}
+    </span>
+  );
 }
 
 export function RelatedProducts({ currentHandle }: Props) {
