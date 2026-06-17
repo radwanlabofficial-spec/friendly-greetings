@@ -1,9 +1,15 @@
-import { toast } from "sonner";
+// Local mock data layer. Shopify has been disconnected — this file keeps the
+// same shape (ShopifyProduct + storefrontApiRequest) so the rest of the app
+// doesn't have to change. All cart/checkout is now handled locally.
 
-export const SHOPIFY_API_VERSION = "2025-07";
-export const SHOPIFY_STORE_PERMANENT_DOMAIN = "friendly-greetings-qtd7e.myshopify.com";
-export const SHOPIFY_STOREFRONT_TOKEN = "ad953202d296a42ef081538681cd03a2";
-export const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
+import alphonsoImg from "@/assets/mango-alphonso.jpg";
+import himsagarImg from "@/assets/mango-himsagar.jpg";
+import kesarImg from "@/assets/mango-kesar.jpg";
+import langraImg from "@/assets/mango-langra.jpg";
+import heroImg from "@/assets/mango-hero.jpg";
+
+export const SHOPIFY_API_VERSION = "mock";
+export const SHOPIFY_STORE_PERMANENT_DOMAIN = "mock.local";
 
 export interface ShopifyProduct {
   node: {
@@ -32,82 +38,119 @@ export interface ShopifyProduct {
   };
 }
 
-export async function storefrontApiRequest(query: string, variables: Record<string, unknown> = {}) {
-  const response = await fetch(SHOPIFY_STOREFRONT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_TOKEN,
+const CURRENCY = "BDT";
+
+function makeProduct(opts: {
+  handle: string;
+  title: string;
+  description: string;
+  price: number;
+  images: { url: string; alt: string }[];
+}): ShopifyProduct {
+  const variantId = `local:${opts.handle}:1kg`;
+  return {
+    node: {
+      id: `local:${opts.handle}`,
+      title: opts.title,
+      description: opts.description,
+      handle: opts.handle,
+      priceRange: {
+        minVariantPrice: { amount: opts.price.toFixed(2), currencyCode: CURRENCY },
+      },
+      images: {
+        edges: opts.images.map((img) => ({
+          node: { url: img.url, altText: img.alt },
+        })),
+      },
+      variants: {
+        edges: [
+          {
+            node: {
+              id: variantId,
+              title: "1 kg box",
+              price: { amount: opts.price.toFixed(2), currencyCode: CURRENCY },
+              availableForSale: true,
+              selectedOptions: [{ name: "Size", value: "1 kg" }],
+            },
+          },
+        ],
+      },
+      options: [{ name: "Size", values: ["1 kg"] }],
     },
-    body: JSON.stringify({ query, variables }),
-  });
-
-  if (response.status === 402) {
-    toast.error("Shopify: Payment required", {
-      description: "Your store needs to be upgraded to a paid plan to continue. Visit admin.shopify.com to upgrade.",
-    });
-    return;
-  }
-
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-  const data = await response.json();
-  if (data.errors) throw new Error(`Shopify error: ${data.errors.map((e: { message: string }) => e.message).join(", ")}`);
-  return data;
+  };
 }
 
-export const STOREFRONT_PRODUCTS_QUERY = `
-  query GetProducts($first: Int!, $query: String) {
-    products(first: $first, query: $query) {
-      edges {
-        node {
-          id
-          title
-          description
-          handle
-          priceRange { minVariantPrice { amount currencyCode } }
-          images(first: 5) { edges { node { url altText } } }
-          variants(first: 10) {
-            edges {
-              node {
-                id
-                title
-                price { amount currencyCode }
-                availableForSale
-                selectedOptions { name value }
-              }
-            }
-          }
-          options { name values }
-        }
-      }
-    }
-  }
-`;
+export const MOCK_PRODUCTS: ShopifyProduct[] = [
+  makeProduct({
+    handle: "alphonso-mangoes-premium-crate",
+    title: "Alphonso — Premium Crate",
+    description:
+      "The king of mangoes from Ratnagiri. Tree-ripened, fiberless, intensely floral.",
+    price: 1450,
+    images: [
+      { url: alphonsoImg, alt: "Alphonso mangoes" },
+      { url: heroImg, alt: "Pile of mangoes" },
+    ],
+  }),
+  makeProduct({
+    handle: "himsagar-mangoes-bengals-finest",
+    title: "Himsagar — Bengal's Finest",
+    description:
+      "Custard-soft Bengal mango. Honey-sweet with notes of pineapple and citrus zest.",
+    price: 980,
+    images: [
+      { url: himsagarImg, alt: "Himsagar mangoes" },
+      { url: heroImg, alt: "Pile of mangoes" },
+    ],
+  }),
+  makeProduct({
+    handle: "langra-mangoes-heritage-harvest",
+    title: "Langra — Heritage Harvest",
+    description:
+      "Green-skinned even when ripe. Tart-sweet, resinous, prized by connoisseurs.",
+    price: 1120,
+    images: [
+      { url: langraImg, alt: "Langra mangoes" },
+      { url: heroImg, alt: "Pile of mangoes" },
+    ],
+  }),
+  makeProduct({
+    handle: "kesar-mangoes-saffron-of-fruits",
+    title: "Kesar — Saffron of Fruits",
+    description:
+      "Amber pulp from Junagadh. Perfumed with saffron, peach and brown sugar.",
+    price: 1280,
+    images: [
+      { url: kesarImg, alt: "Kesar mangoes" },
+      { url: heroImg, alt: "Pile of mangoes" },
+    ],
+  }),
+];
 
-export const STOREFRONT_PRODUCT_BY_HANDLE_QUERY = `
-  query GetProductByHandle($handle: String!) {
-    product(handle: $handle) {
-      id
-      title
-      description
-      handle
-      priceRange { minVariantPrice { amount currencyCode } }
-      images(first: 5) { edges { node { url altText } } }
-      variants(first: 10) {
-        edges {
-          node {
-            id
-            title
-            price { amount currencyCode }
-            availableForSale
-            selectedOptions { name value }
-          }
-        }
-      }
-      options { name values }
-    }
+// Minimal API surface so callers don't have to change.
+// Returns shapes that mimic the Shopify Storefront GraphQL responses.
+export async function storefrontApiRequest(
+  query: string,
+  variables: Record<string, unknown> = {},
+) {
+  await new Promise((r) => setTimeout(r, 80)); // tiny latency for skeletons
+
+  if (query.includes("GetProductByHandle") || query.includes("product(handle")) {
+    const handle = variables.handle as string;
+    const found = MOCK_PRODUCTS.find((p) => p.node.handle === handle);
+    return { data: { product: found ? found.node : null } };
   }
-`;
+
+  // products list
+  return {
+    data: {
+      products: { edges: MOCK_PRODUCTS },
+    },
+  };
+}
+
+export const STOREFRONT_PRODUCTS_QUERY = `query GetProducts { products }`;
+export const STOREFRONT_PRODUCT_BY_HANDLE_QUERY = `query GetProductByHandle { product(handle) }`;
 
 export function formatPrice(amount: string | number, currencyCode: string) {
   const value = typeof amount === "string" ? parseFloat(amount) : amount;

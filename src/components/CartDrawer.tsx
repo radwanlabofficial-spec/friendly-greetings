@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,38 +10,24 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ShoppingBag, Minus, Plus, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { ShoppingBag, Minus, Plus, Trash2, ArrowRight, Loader2 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { formatPrice } from "@/lib/shopify";
 
 export const CartDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const {
-    items,
-    isLoading,
-    isSyncing,
-    updateQuantity,
-    removeItem,
-    getCheckoutUrl,
-    syncCart,
-  } = useCartStore();
+  const navigate = useNavigate();
+  const { items, isLoading, updateQuantity, removeItem } = useCartStore();
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalPrice = items.reduce(
     (sum, i) => sum + parseFloat(i.price.amount) * i.quantity,
     0,
   );
-  const currency = items[0]?.price.currencyCode || "USD";
-
-  useEffect(() => {
-    if (isOpen) syncCart();
-  }, [isOpen, syncCart]);
+  const currency = items[0]?.price.currencyCode || "BDT";
 
   const handleCheckout = () => {
-    const checkoutUrl = getCheckoutUrl();
-    if (checkoutUrl) {
-      window.open(checkoutUrl, "_blank");
-      setIsOpen(false);
-    }
+    setIsOpen(false);
+    navigate({ to: "/checkout" });
   };
 
   return (
@@ -138,7 +125,7 @@ export const CartDrawer = () => {
               <div className="flex-shrink-0 space-y-4 pt-4 mt-4 border-t bg-background">
                 <div className="flex justify-between items-baseline">
                   <span className="text-sm uppercase tracking-widest text-muted-foreground">
-                    Total
+                    Subtotal
                   </span>
                   <span className="font-display text-3xl">
                     {formatPrice(totalPrice, currency)}
@@ -148,14 +135,14 @@ export const CartDrawer = () => {
                   onClick={handleCheckout}
                   className="w-full rounded-full bg-foreground text-background hover:bg-foreground/90"
                   size="lg"
-                  disabled={items.length === 0 || isLoading || isSyncing}
+                  disabled={items.length === 0 || isLoading}
                 >
-                  {isLoading || isSyncing ? (
+                  {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
                       Checkout
-                      <ExternalLink className="w-4 h-4 ml-2" />
+                      <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
                 </Button>
