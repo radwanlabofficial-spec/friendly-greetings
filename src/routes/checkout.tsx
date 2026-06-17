@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Header } from "@/components/Header";
@@ -368,7 +368,7 @@ interface FieldProps {
   maxLength?: number;
   inputMode?: "text" | "numeric" | "tel" | "email";
   autoComplete?: string;
-  register: ReturnType<ReturnType<typeof useForm<CheckoutFormValues>>["register"]>;
+  register: UseFormRegisterReturn;
   error?: string;
 }
 
