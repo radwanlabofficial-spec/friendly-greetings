@@ -182,8 +182,15 @@ export function RelatedProducts({ currentHandle }: Props) {
                       {formatPrice(price.amount, price.currencyCode)}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {details.origin}
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground">
+                      {details.origin}
+                    </p>
+                    <AvailabilityBadge season={details.season} />
+                  </div>
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Calendar className="w-3 h-3" />
+                    <span>Harvest: {details.season}</span>
                   </p>
 
                   {(s.sharedNotes.length > 0 || s.sharedPairings.length > 0) && (
