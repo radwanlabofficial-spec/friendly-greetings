@@ -9,6 +9,7 @@ import {
 import { useEffect } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { MangoSidebar } from "@/components/MangoSidebar";
 import { useCartSync } from "@/hooks/useCartSync";
 
 function NotFoundComponent() {
