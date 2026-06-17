@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useForm, type UseFormRegisterReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +21,7 @@ import {
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -30,6 +34,77 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const SHIPPING_FLAT = 120;
+
+// Validation schema — keeps inputs bounded and well-formed.
+const checkoutSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .email("Enter a valid email")
+    .max(255),
+  firstName: z.string().trim().min(1, "Required").max(60, "Too long"),
+  lastName: z.string().trim().min(1, "Required").max(60, "Too long"),
+  address: z.string().trim().min(4, "Enter a street address").max(200),
+  city: z.string().trim().min(2, "Enter a city").max(80),
+  postcode: z
+    .string()
+    .trim()
+    .min(3, "Enter a postcode")
+    .max(12, "Too long")
+    .regex(/^[A-Za-z0-9 -]+$/, "Letters, numbers, spaces only"),
+  phone: z
+    .string()
+    .trim()
+    .min(7, "Enter a valid phone")
+    .max(20)
+    .regex(/^[+0-9 ()-]+$/, "Digits, spaces and +()- only"),
+  card: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\s+/g, ""))
+    .pipe(
+      z
+        .string()
+        .regex(/^[0-9]{13,19}$/, "Card number must be 13–19 digits")
+        .refine(luhnCheck, "Card number is invalid"),
+    ),
+  exp: z
+    .string()
+    .trim()
+    .regex(/^(0[1-9]|1[0-2])\s*\/\s*([0-9]{2})$/, "Use MM / YY")
+    .refine(isFutureExpiry, "Card is expired"),
+  cvc: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{3,4}$/, "3 or 4 digits"),
+});
+
+type CheckoutFormValues = z.infer<typeof checkoutSchema>;
+
+function luhnCheck(num: string): boolean {
+  let sum = 0;
+  let dbl = false;
+  for (let i = num.length - 1; i >= 0; i--) {
+    let d = parseInt(num[i], 10);
+    if (dbl) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    sum += d;
+    dbl = !dbl;
+  }
+  return sum % 10 === 0;
+}
+
+function isFutureExpiry(value: string): boolean {
+  const m = value.match(/^(0[1-9]|1[0-2])\s*\/\s*([0-9]{2})$/);
+  if (!m) return false;
+  const month = parseInt(m[1], 10);
+  const year = 2000 + parseInt(m[2], 10);
+  const expiry = new Date(year, month, 0, 23, 59, 59); // last day of expiry month
+  return expiry.getTime() >= Date.now();
+}
 
 function CheckoutPage() {
   const { items, updateQuantity, removeItem, clearCart } = useCartStore();
@@ -44,8 +119,16 @@ function CheckoutPage() {
   const shipping = items.length === 0 ? 0 : SHIPPING_FLAT;
   const total = subtotal + shipping;
 
-  const handlePlace = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutSchema),
+    mode: "onBlur",
+  });
+
+  const onSubmit = async (_values: CheckoutFormValues) => {
     if (items.length === 0) return;
     setPlacing(true);
     await new Promise((r) => setTimeout(r, 900));
@@ -54,6 +137,10 @@ function CheckoutPage() {
     clearCart();
     setPlacing(false);
     toast.success("Order placed", { position: "top-center" });
+  };
+
+  const onInvalid = () => {
+    toast.error("Please check the highlighted fields", { position: "top-center" });
   };
 
   if (placed) {
@@ -115,7 +202,8 @@ function CheckoutPage() {
           </div>
         ) : (
           <form
-            onSubmit={handlePlace}
+            onSubmit={handleSubmit(onSubmit, onInvalid)}
+            noValidate
             className="grid lg:grid-cols-5 gap-10 items-start"
           >
             {/* DELIVERY + PAYMENT */}
@@ -126,13 +214,20 @@ function CheckoutPage() {
                   Where should we send your harvest?
                 </p>
                 <div className="mt-6 grid sm:grid-cols-2 gap-4">
-                  <Field id="email" label="Email" type="email" required placeholder="you@example.com" wide />
-                  <Field id="firstName" label="First name" required placeholder="Ariana" />
-                  <Field id="lastName" label="Last name" required placeholder="Rahman" />
-                  <Field id="address" label="Street address" required placeholder="12 Gulshan Ave" wide />
-                  <Field id="city" label="City" required placeholder="Dhaka" />
-                  <Field id="postcode" label="Postcode" required placeholder="1212" />
-                  <Field id="phone" label="Phone" type="tel" required placeholder="+880" wide />
+                  <Field id="email" label="Email" type="email" placeholder="you@example.com" wide
+                    register={register("email")} error={errors.email?.message} autoComplete="email" />
+                  <Field id="firstName" label="First name" placeholder="Ariana"
+                    register={register("firstName")} error={errors.firstName?.message} autoComplete="given-name" />
+                  <Field id="lastName" label="Last name" placeholder="Rahman"
+                    register={register("lastName")} error={errors.lastName?.message} autoComplete="family-name" />
+                  <Field id="address" label="Street address" placeholder="12 Gulshan Ave" wide
+                    register={register("address")} error={errors.address?.message} autoComplete="street-address" />
+                  <Field id="city" label="City" placeholder="Dhaka"
+                    register={register("city")} error={errors.city?.message} autoComplete="address-level2" />
+                  <Field id="postcode" label="Postcode" placeholder="1212" maxLength={12}
+                    register={register("postcode")} error={errors.postcode?.message} autoComplete="postal-code" />
+                  <Field id="phone" label="Phone" type="tel" placeholder="+880" wide maxLength={20}
+                    register={register("phone")} error={errors.phone?.message} autoComplete="tel" />
                 </div>
               </section>
 
@@ -144,9 +239,13 @@ function CheckoutPage() {
                   </span>
                 </div>
                 <div className="mt-6 grid sm:grid-cols-2 gap-4">
-                  <Field id="card" label="Card number" required placeholder="4242 4242 4242 4242" wide />
-                  <Field id="exp" label="Expiry" required placeholder="MM / YY" />
-                  <Field id="cvc" label="CVC" required placeholder="123" />
+                  <Field id="card" label="Card number" placeholder="4242 4242 4242 4242" wide
+                    inputMode="numeric" maxLength={23}
+                    register={register("card")} error={errors.card?.message} autoComplete="cc-number" />
+                  <Field id="exp" label="Expiry" placeholder="MM / YY" maxLength={7}
+                    register={register("exp")} error={errors.exp?.message} autoComplete="cc-exp" />
+                  <Field id="cvc" label="CVC" placeholder="123" maxLength={4} inputMode="numeric"
+                    register={register("cvc")} error={errors.cvc?.message} autoComplete="cc-csc" />
                 </div>
                 <p className="mt-4 text-xs text-muted-foreground">
                   Demo checkout — no real charge is made.
@@ -242,7 +341,7 @@ function CheckoutPage() {
 
                 <Button
                   type="submit"
-                  disabled={placing}
+                  disabled={placing || isSubmitting}
                   size="lg"
                   className="mt-6 w-full rounded-full bg-gradient-to-r from-primary via-primary to-amber-500 text-primary-foreground hover:brightness-110 h-12"
                 >
@@ -260,21 +359,31 @@ function CheckoutPage() {
   );
 }
 
+interface FieldProps {
+  id: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  wide?: boolean;
+  maxLength?: number;
+  inputMode?: "text" | "numeric" | "tel" | "email";
+  autoComplete?: string;
+  register: UseFormRegisterReturn;
+  error?: string;
+}
+
 function Field({
   id,
   label,
   type = "text",
-  required,
   placeholder,
   wide,
-}: {
-  id: string;
-  label: string;
-  type?: string;
-  required?: boolean;
-  placeholder?: string;
-  wide?: boolean;
-}) {
+  maxLength,
+  inputMode,
+  autoComplete,
+  register,
+  error,
+}: FieldProps) {
   return (
     <div className={wide ? "sm:col-span-2" : ""}>
       <Label htmlFor={id} className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -283,10 +392,23 @@ function Field({
       <Input
         id={id}
         type={type}
-        required={required}
         placeholder={placeholder}
-        className="mt-1.5 rounded-xl bg-background"
+        maxLength={maxLength}
+        inputMode={inputMode}
+        autoComplete={autoComplete}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={cn(
+          "mt-1.5 rounded-xl bg-background",
+          error && "border-destructive focus-visible:ring-destructive",
+        )}
+        {...register}
       />
+      {error && (
+        <p id={`${id}-error`} className="mt-1.5 text-xs text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
